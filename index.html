@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Graduation Golf Scorecard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #e8f5e9;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      color: #2e7d32;
+    }
+    .hidden {
+      display: none;
+    }
+    input[type="text"], input[type="number"] {
+      padding: 5px;
+      margin: 5px;
+    }
+    table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 90%;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+    th {
+      background-color: #a5d6a7;
+    }
+    .btn {
+      background-color: #388e3c;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 10px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .btn:hover {
+      background-color: #2e7d32;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🏌️‍♂️ Graduation Golf Scorecard 🎓</h1>
+
+  <div id="nameEntry">
+    <h2>Enter Player Names</h2>
+    <div id="playerInputs">
+      <input type="text" placeholder="Player 1 Name" class="player-name" /><br>
+      <input type="text" placeholder="Player 2 Name" class="player-name" /><br>
+    </div>
+    <button class="btn" onclick="addPlayer()">Add Another Player</button>
+    <button class="btn" onclick="startGame()">Start Game</button>
+  </div>
+
+  <div id="scorecard" class="hidden">
+    <h2>Scorecard - 9 Holes</h2>
+    <form id="scoreForm">
+      <table id="scoreTable">
+        <thead>
+          <tr>
+            <th>Player</th>
+            <th>Hole 1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th>
+          </tr>
+        </thead>
+        <tbody id="scoreRows"></tbody>
+      </table>
+      <button type="button" class="btn" onclick="finishGame()">Finish Game</button>
+    </form>
+  </div>
+
+  <div id="leaderboard" class="hidden">
+    <h2>🏆 Leaderboard</h2>
+    <table>
+      <thead>
+        <tr><th>Player</th><th>Total Score</th></tr>
+      </thead>
+      <tbody id="leaderboardBody"></tbody>
+    </table>
+    <h3 id="winner"></h3>
+  </div>
+
+  <script>
+    let players = [];
+
+    function addPlayer() {
+      const input = document.createElement("input");
+      input.type = "text";
+      input.placeholder = `Player ${document.querySelectorAll('.player-name').length + 1} Name`;
+      input.classList.add("player-name");
+      document.getElementById("playerInputs").appendChild(input);
+      document.getElementById("playerInputs").appendChild(document.createElement("br"));
+    }
+
+    function startGame() {
+      const nameInputs = document.querySelectorAll(".player-name");
+      players = Array.from(nameInputs)
+        .map(input => input.value.trim())
+        .filter(name => name !== "");
+      
+      if (players.length < 1) {
+        alert("Please enter at least one player.");
+        return;
+      }
+
+      document.getElementById("nameEntry").classList.add("hidden");
+      document.getElementById("scorecard").classList.remove("hidden");
+
+      const scoreRows = document.getElementById("scoreRows");
+      players.forEach((player, index) => {
+        const row = document.createElement("tr");
+        const nameCell = document.createElement("td");
+        nameCell.textContent = player;
+        row.appendChild(nameCell);
+
+        for (let i = 0; i < 9; i++) {
+          const scoreCell = document.createElement("td");
+          const input = document.createElement("input");
+          input.type = "number";
+          input.min = 1;
+          input.max = 12;
+          input.name = `score-${index}-${i}`;
+          input.required = true;
+          input.style.width = "50px";
+          scoreCell.appendChild(input);
+          row.appendChild(scoreCell);
+        }
+        scoreRows.appendChild(row);
+      });
+    }
+
+    function finishGame() {
+      const scores = players.map((_, index) => {
+        let total = 0;
+        for (let i = 0; i < 9; i++) {
+          const input = document.querySelector(`[name="score-${index}-${i}"]`);
+          const value = parseInt(input.value, 10);
+          if (isNaN(value)) {
+            alert("Please fill in all scores.");
+            return null;
+          }
+          total += value;
+        }
+        return total;
+      });
+
+      if (scores.includes(null)) return;
+
+      // Show leaderboard
+      document.getElementById("scorecard").classList.add("hidden");
+      document.getElementById("leaderboard").classList.remove("hidden");
+
+      const leaderboardBody = document.getElementById("leaderboardBody");
+      leaderboardBody.innerHTML = "";
+
+      let lowestScore = Infinity;
+      let winnerName = "";
+
+      players.forEach((player, i) => {
+        const row = document.createElement("tr");
+        const nameCell = document.createElement("td");
+        nameCell.textContent = player;
+        const scoreCell = document.createElement("td");
+        scoreCell.textContent = scores[i];
+        row.appendChild(nameCell);
+        row.appendChild(scoreCell);
+        leaderboardBody.appendChild(row);
+
+        if (scores[i] < lowestScore) {
+          lowestScore = scores[i];
+          winnerName = player;
+        }
+      });
+
+      document.getElementById("winner").textContent = `🎉 ${winnerName} wins the $10 with a score of ${lowestScore}! 🎉`;
+    }
+  </script>
+
+</body>
+</html>
